@@ -19,7 +19,6 @@ import org.terasology.engine.core.GameEngine;
 import org.terasology.engine.core.Time;
 import org.terasology.engine.core.subsystem.EngineSubsystem;
 import org.terasology.engine.monitoring.gui.AdvancedMonitor;
-import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
 
@@ -51,9 +50,6 @@ public class MonitoringSubsystem implements EngineSubsystem {
         new JvmThreadMetrics().bindTo(meterRegistry);
         new ProcessorMetrics().bindTo(meterRegistry);
 
-        // Install Reactor metrics. In theory. I haven't seen them show up yet.
-        Schedulers.enableMetrics();
-
         // Add one of our own.
         Gauge.builder("terasology.fps", time::getFps)
                 .description("framerate")
@@ -61,7 +57,7 @@ public class MonitoringSubsystem implements EngineSubsystem {
                 .register(meterRegistry);
 
         // Make global registry available via JMX.
-        JmxMeterRegistry jmxMeterRegistry = new JmxMeterRegistry(new JmxConfig() {
+        MeterRegistry jmxMeterRegistry = new JmxMeterRegistry(new JmxConfig() {
             @Override
             public String get(String key) {
                 return null;
@@ -73,6 +69,7 @@ public class MonitoringSubsystem implements EngineSubsystem {
             }
         }, Clock.SYSTEM);
         Metrics.addRegistry(jmxMeterRegistry);
+
 
         // If we want to make global metrics available to our custom view,
         // we add our custom registry to the global composite:
